@@ -46,7 +46,7 @@ function defaultRadiusFeet() {
 
 function commonRegionData() {
   return {
-    name: game.i18n.localize("FIGHT_ON_SIGHT.behavior.label"),
+    name: game.i18n.localize("FIGHT_ON_SIGHT.region.name"),
     color: "#c62828",
     visibility: CONST.REGION_VISIBILITY?.GAMEMASTER ?? 2,
     behaviors: [

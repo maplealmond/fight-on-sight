@@ -1,6 +1,7 @@
 {
   "FIGHT_ON_SIGHT.moduleTitle": "Fight on Sight",
   "FIGHT_ON_SIGHT.behavior.label": "Combat Zone",
+  "FIGHT_ON_SIGHT.region.name": "Combat Region",
   "FIGHT_ON_SIGHT.prompt.clickLocation": "Click on the map to place the combat region.",
   "FIGHT_ON_SIGHT.prompt.clickToken": "Click a token on the canvas to anchor the combat region.",
   "FIGHT_ON_SIGHT.notify.created": "Combat region created ({radius} ft).",

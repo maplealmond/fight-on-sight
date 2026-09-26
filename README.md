@@ -1,17 +1,23 @@
 # Fight on Sight
 
-A Foundry VTT module that lets a GM place combat trigger regions on a scene. When a PC steps into one, combat starts automatically and pulls in every nearby NPC and every PC in the party.
+You round the corner and see a monster.  Freeze!  Roll initiative.
+
+This module is mainly intended for heavy dungeon crawls.  It allows you to create combat trigger regions onto a scene or attach them to a monster.  When a PC gets too close to the monster, the game pauses, everyone gets added to the fight.
+
+Combat regions also trigger to NPCs entering combat, so any NPC who sees their friends react and join a fight will also join the fight, if so configured.
 
 ## Usage
 
-Open the **Fight on Sight Macros** compendium and run **Create Combat Region** (drag it to your hotbar for quick access) as a GM. Pick an anchor:
+You can use this one of two ways via the macro Compendium.  Create Combat Region (Location) lets you place a combat region anywhere on the map.  Create Combat Region (Token) lets you anchor a region to a token, to represent the eyes of a vigilant guard.  Note that if you anchor a Combat Region to a token it will not fire if that token is hidden at the Foundry level.
 
-- **Location** — click on the map to place a 30 ft circular region.
-- **Token** — click a token; the region follows that token and is clipped by sight-blocking walls and darkness the target can't see through.
-
-The region self-disables the first time a PC crosses it, so it fires exactly once.
+By default, the region self-disables the first time a PC crosses it, so it fires exactly once.  You can also set regions to self-delete after firing to reduce clutter.
 
 ## Bonus features
 
-- When every combatant has rolled initiative, combat advances to round one and the game unpauses.
-- If an NPC that belongs to another (still-enabled) trigger region gets pulled into a fight, that region fires too — combats cascade.
+If a PC has the PF2e Undetected status, they will not trigger a combat region.
+
+Optional: When every combatant has rolled initiative, combat advances to round one and the game unpauses.
+
+## AI Disclosure
+
+Claude was used to generate some amount of code, with careful and guided human direction, and roughly based on a prior handcrafted prototype.  No AI art or assets were used in the creation of this module.
