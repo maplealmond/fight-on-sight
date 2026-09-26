@@ -6,18 +6,34 @@ import { createCombatRegionLocation, createCombatRegionToken } from "./create-re
 import { enableAllRegions } from "./enable-regions.js";
 import { registerCombatListeners } from "./combat-listeners.js";
 import { registerCombatantHook } from "./combatant-hook.js";
+import { registerAvoidNoticeHooks } from "./avoid-notice-hooks.js";
+import { rollAvoidNoticePreset } from "./avoid-notice.js";
+import { registerPromptHandler } from "./prompt.js";
+
+const API = {
+  createCombatRegionLocation,
+  createCombatRegionToken,
+  enableAllRegions,
+  rollAvoidNotice: rollAvoidNoticePreset
+};
 
 Hooks.once("init", () => {
   registerSettings();
   registerBehavior();
   registerCombatListeners();
   registerCombatantHook();
-
-  const mod = game.modules.get(MODULE_ID);
-  if (mod) {
-    mod.api = { createCombatRegionLocation, createCombatRegionToken, enableAllRegions };
-  }
+  registerAvoidNoticeHooks();
+  registerPromptHandler();
+  attachApi();
 });
+
+Hooks.once("setup", attachApi);
+Hooks.once("ready", attachApi);
+
+function attachApi() {
+  const mod = game.modules.get(MODULE_ID);
+  if (mod) mod.api = API;
+}
 
 function registerSettings() {
   game.settings.register(MODULE_ID, SETTINGS.radius, {
@@ -43,5 +59,13 @@ function registerSettings() {
     config: true,
     type: Boolean,
     default: false
+  });
+  game.settings.register(MODULE_ID, SETTINGS.avoidNoticeTtl, {
+    name: "FIGHT_ON_SIGHT.settings.avoidNoticeTtl.name",
+    hint: "FIGHT_ON_SIGHT.settings.avoidNoticeTtl.hint",
+    scope: "world",
+    config: true,
+    type: Number,
+    default: 6
   });
 }

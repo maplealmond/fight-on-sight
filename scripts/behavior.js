@@ -1,7 +1,7 @@
 // Custom RegionBehaviorType that fires the combat trigger.
 
 import { BEHAVIOR_TYPE, MODULE_ID } from "./constants.js";
-import { isTriggeringPC, runCombatTrigger } from "./trigger.js";
+import { runCombatTrigger } from "./trigger.js";
 
 export function registerBehavior() {
   class CombatTriggerBehavior extends foundry.data.regionBehaviors.RegionBehaviorType {
@@ -27,16 +27,9 @@ export function registerBehavior() {
   async function onRegionEvent(event) {
     const token = event?.data?.token ?? null;
 
-    // On the client that initiated the movement, stop the token at the region
-    // edge so it doesn't continue past the trigger. Only meaningful when the
-    // entering token is a detected PC — that's the case that starts combat,
-    // and it matches "even if controlled by the GM". Undetected PCs pass
-    // through without stopping.
-    if (event?.user?.isSelf && token && isTriggeringPC(token)) {
-      try { token.stopMovement(); } catch (_) { /* not the initiator or no movement */ }
-    }
-
-    // Everything below is world state — only the active GM performs it.
+    // World state — only the active GM performs it. The game pause on
+    // Trouble!/combat is what visibly halts play; we don't touch the
+    // token's motion here.
     if (!game.user.isActiveGM) return;
     try {
       await runCombatTrigger({

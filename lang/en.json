@@ -15,5 +15,10 @@
   "FIGHT_ON_SIGHT.settings.initiativeAdvance.name": "Auto-advance to Round 1",
   "FIGHT_ON_SIGHT.settings.initiativeAdvance.hint": "When every combatant has rolled initiative, advance combat to round one and unpause the game.",
   "FIGHT_ON_SIGHT.settings.deleteAfterTrigger.name": "Delete Region After Trigger",
-  "FIGHT_ON_SIGHT.settings.deleteAfterTrigger.hint": "When a combat region triggers, delete the region entirely instead of just disabling it."
+  "FIGHT_ON_SIGHT.settings.deleteAfterTrigger.hint": "When a combat region triggers, delete the region entirely instead of just disabling it.",
+  "FIGHT_ON_SIGHT.settings.avoidNoticeTtl.name": "Avoid Notice Result Duration (seconds)",
+  "FIGHT_ON_SIGHT.settings.avoidNoticeTtl.hint": "How long (in world/game seconds) a successful Avoid Notice roll stays valid before a new roll is required. One PF2E round is 6 seconds. Default: 6.",
+  "FIGHT_ON_SIGHT.avoidNotice.noActor": "Select a token (or set your player character) to roll Avoid Notice.",
+  "FIGHT_ON_SIGHT.avoidNotice.notActive": "{name} does not have Avoid Notice as an active exploration activity.",
+  "FIGHT_ON_SIGHT.avoidNotice.stored": "Stored Avoid Notice roll for {name}."
 }

@@ -4,6 +4,8 @@
 // recursion here.
 
 import { BEHAVIOR_TYPE, MODULE_ID, SETTINGS } from "./constants.js";
+import { getStoredResult, hasAvoidNotice } from "./avoid-notice.js";
+import { presentAvoidNoticeChoice } from "./prompt.js";
 
 // A "PC" for our purposes = a token whose actor is a member of the primary
 // party (Foundry v13 introduces `game.actors.party` in systems that support
@@ -13,14 +15,12 @@ import { BEHAVIOR_TYPE, MODULE_ID, SETTINGS } from "./constants.js";
 export function isPC(tokenDoc) {
   const actor = tokenDoc?.actor;
   if (!actor) return false;
+  // Party members always count (covers PF2E's "party" actor and GM-controlled
+  // party PCs). And any actor with a player owner is a PC too — covers the
+  // case of a brand-new PC who hasn't been added to the party actor yet.
   const party = game.actors?.party;
-  if (party?.members?.length) {
-    for (const member of party.members) {
-      if (member === actor || member.id === actor.id) return true;
-    }
-    return false;
-  }
-  return actor.hasPlayerOwner;
+  if (party?.members?.some(m => m === actor || m.id === actor.id)) return true;
+  return !!actor.hasPlayerOwner;
 }
 
 // A token whose actor carries the "undetected" condition does not count as
@@ -64,7 +64,7 @@ export function runCombatTrigger(args) {
   return next;
 }
 
-async function _runCombatTrigger({ behavior, region, triggeringToken, requirePC = true, retire = null }) {
+async function _runCombatTrigger({ behavior, region, triggeringToken, requirePC = true, retire = null, skipAvoidNotice = false }) {
   if (!game.user.isActiveGM) return;
   if (!region || behavior?.disabled) return;
 
@@ -86,11 +86,33 @@ async function _runCombatTrigger({ behavior, region, triggeringToken, requirePC 
   // (which just entered combat) IS the reason to fire.
   if (requirePC && !triggeringPCs.length) return;
 
-  // Retire this trigger so it doesn't fire again. The caller can force the
-  // decision via `retire`; otherwise the default is "was the token that just
-  // tripped us a detected PC?" — matches the original spec for movement
-  // triggers, while the combatant-hook path explicitly passes `retire: true`
-  // so an NPC entering combat inside the region also retires it.
+  // If the specific token that tripped this trigger is a PC using Avoid
+  // Notice, either honor an already-recorded roll or defer to the Trouble!
+  // prompt.
+  //
+  //   * A valid, non-expired stored roll short-circuits the trigger — the
+  //     PC's stealth is "still riding". No prompt, no combat. (The stored
+  //     roll's original DC comparison already succeeded; we don't re-compare
+  //     against different NPCs on subsequent triggers within the window.)
+  //   * No stored roll (or expired) → present the Trouble! prompt, which
+  //     pauses the game and offers Avoid Notice vs Fight. The button handler
+  //     re-enters this function with skipAvoidNotice=true.
+  if (
+    !skipAvoidNotice
+    && requirePC
+    && triggeringToken
+    && isTriggeringPC(triggeringToken)
+    && hasAvoidNotice(triggeringToken.actor)
+  ) {
+    if (getStoredResult(triggeringToken.actor) != null) {
+      return; // stealth still riding — no-op
+    }
+    await presentAvoidNoticeChoice({ region, triggeringToken });
+    return;
+  }
+
+  // Retire this trigger so it doesn't fire again. Caller can force via
+  // `retire`; default is "was the triggering token a detected PC?"
   const shouldRetire = retire ?? (triggeringToken ? isTriggeringPC(triggeringToken) : false);
   if (shouldRetire) {
     if (game.settings.get(MODULE_ID, SETTINGS.deleteAfterTrigger)) {
@@ -139,7 +161,6 @@ async function _runCombatTrigger({ behavior, region, triggeringToken, requirePC 
     await combat.createEmbeddedDocuments("Combatant", additions);
   }
 
-  ui.notifications?.info?.(`Fight on Sight: combat updated (${additions.length} added).`);
 }
 
 export function findTriggerBehavior(regionDoc) {
