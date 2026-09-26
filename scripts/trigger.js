@@ -23,12 +23,20 @@ export function isPC(tokenDoc) {
   return actor.hasPlayerOwner;
 }
 
-// A token whose actor carries the "undetected" status (PF2E's undetected
-// condition, and any other system that registers the same status id) does
-// not count as a triggering presence — invisible / sneaking PCs can slip
-// through without setting off the combat trigger.
+// A token whose actor carries the "undetected" condition does not count as
+// a triggering presence — invisible / sneaking PCs can slip through without
+// setting off the combat trigger.
+//
+// PF2E stores conditions as embedded items rather than in Foundry's core
+// `statuses` set, so we probe both APIs to work across systems.
 export function isUndetected(tokenDoc) {
-  return tokenDoc?.actor?.statuses?.has("undetected") ?? false;
+  const actor = tokenDoc?.actor;
+  if (!actor) return false;
+  if (typeof actor.hasCondition === "function" && actor.hasCondition("undetected")) return true;
+  if (actor.conditions?.bySlug?.("undetected")?.length) return true;
+  if (actor.itemTypes?.condition?.some?.(c => c.slug === "undetected")) return true;
+  if (actor.statuses?.has?.("undetected")) return true;
+  return false;
 }
 
 // A PC that would actually spring the trap: is a PC and is not undetected.
@@ -95,11 +103,20 @@ async function _runCombatTrigger({ behavior, region, triggeringToken }) {
   }
 
   // Add every NPC currently inside the region (skip PCs — they get added below
-  // regardless of position).
+  // regardless of position). Foundry-hidden monsters (`tokenDoc.hidden`) still
+  // count for triggering, and they get revealed here so players can see who
+  // just attacked them. This does NOT touch the PF2E "undetected" status.
   const npcTokensInRegion = inside.filter(t => !isPC(t));
+  const hiddenNpcTokens = npcTokensInRegion.filter(t => t.hidden);
+  if (hiddenNpcTokens.length) {
+    await scene.updateEmbeddedDocuments(
+      "Token",
+      hiddenNpcTokens.map(t => ({ _id: t.id, hidden: false }))
+    );
+  }
   const npcAdds = npcTokensInRegion
     .filter(t => !combat.combatants.some(c => c.tokenId === t.id))
-    .map(t => ({ tokenId: t.id, sceneId: scene.id, actorId: t.actor.id, hidden: t.hidden }));
+    .map(t => ({ tokenId: t.id, sceneId: scene.id, actorId: t.actor.id, hidden: false }));
 
   // Add every PC in the world (any scene) — spec: "add every PC to the combat
   // no matter where they are".
