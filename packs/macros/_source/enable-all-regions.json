@@ -1,0 +1,22 @@
+{
+  "_id": "fghtEnableRgns01",
+  "name": "Enable all Regions",
+  "type": "script",
+  "author": "fight-on-sight",
+  "img": "icons/svg/lever.svg",
+  "scope": "global",
+  "command": "game.modules.get('fight-on-sight').api.enableAllRegions();",
+  "folder": null,
+  "sort": 100,
+  "ownership": { "default": 0 },
+  "flags": {},
+  "_stats": {
+    "systemId": null,
+    "systemVersion": null,
+    "coreVersion": "13",
+    "createdTime": null,
+    "modifiedTime": null,
+    "lastModifiedBy": null
+  },
+  "_key": "!macros!fghtEnableRgns01"
+}

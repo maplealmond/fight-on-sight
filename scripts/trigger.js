@@ -1,4 +1,7 @@
-// The combat-trigger logic: create/join a combat, add tokens, cascade.
+// The combat-trigger logic: create/join a combat and add tokens. Cascade to
+// other regions is handled via the `createCombatant` hook (any combatant
+// added anywhere re-checks the regions it stands inside), not by explicit
+// recursion here.
 
 import { BEHAVIOR_TYPE, MODULE_ID, SETTINGS } from "./constants.js";
 
@@ -18,6 +21,19 @@ export function isPC(tokenDoc) {
     return false;
   }
   return actor.hasPlayerOwner;
+}
+
+// A token whose actor carries the "undetected" status (PF2E's undetected
+// condition, and any other system that registers the same status id) does
+// not count as a triggering presence — invisible / sneaking PCs can slip
+// through without setting off the combat trigger.
+export function isUndetected(tokenDoc) {
+  return tokenDoc?.actor?.statuses?.has("undetected") ?? false;
+}
+
+// A PC that would actually spring the trap: is a PC and is not undetected.
+export function isTriggeringPC(tokenDoc) {
+  return isPC(tokenDoc) && !isUndetected(tokenDoc);
 }
 
 function tokensInsideRegion(region) {
@@ -48,18 +64,25 @@ async function _runCombatTrigger({ behavior, region, triggeringToken }) {
   if (!scene) return;
 
   const inside = tokensInsideRegion(region);
-  const pcsInside = inside.filter(isPC);
+  const triggeringPCs = inside.filter(isTriggeringPC);
   console.debug(`${MODULE_ID} | runCombatTrigger`, {
     region: region.name,
     triggeringToken: triggeringToken?.name,
     insideCount: inside.length,
-    pcsInside: pcsInside.map(t => t.name)
+    triggeringPCs: triggeringPCs.map(t => t.name)
   });
-  if (!pcsInside.length) return;
+  if (!triggeringPCs.length) return;
 
-  // If a PC triggered us, disable this behavior so it does not fire again.
-  if (triggeringToken && isPC(triggeringToken)) {
-    await behavior.update({ disabled: true });
+  // If a detected PC triggered us, retire this trigger so it doesn't fire
+  // again. The world setting decides whether to disable the behavior (keep
+  // the region on the map for later re-enable) or delete the whole region
+  // outright. Undetected PCs never trip it — they walk through invisibly.
+  if (triggeringToken && isTriggeringPC(triggeringToken)) {
+    if (game.settings.get(MODULE_ID, SETTINGS.deleteAfterTrigger)) {
+      await region.delete();
+    } else {
+      await behavior.update({ disabled: true });
+    }
   }
 
   // If ANY combat already exists — active or not, started or not — add to it.
@@ -88,45 +111,11 @@ async function _runCombatTrigger({ behavior, region, triggeringToken }) {
   }
 
   const additions = [...npcAdds, ...pcAdds];
-  let created = [];
   if (additions.length) {
-    created = await combat.createEmbeddedDocuments("Combatant", additions);
-  }
-
-  // Cascade: any NPC we just added may itself be inside another enabled trigger
-  // region — fire those too.
-  if (game.settings.get(MODULE_ID, SETTINGS.cascade)) {
-    await cascadeFromCombatants(scene, created.filter(c => !c.actor?.hasPlayerOwner), region);
+    await combat.createEmbeddedDocuments("Combatant", additions);
   }
 
   ui.notifications?.info?.(`Fight on Sight: combat updated (${additions.length} added).`);
-}
-
-async function cascadeFromCombatants(scene, npcCombatants, sourceRegion) {
-  if (!npcCombatants?.length) return;
-  const visited = new Set([sourceRegion.id]);
-  const queue = [];
-
-  for (const c of npcCombatants) {
-    const tokenDoc = scene.tokens.get(c.tokenId);
-    if (!tokenDoc) continue;
-    for (const region of scene.regions) {
-      if (visited.has(region.id)) continue;
-      const behavior = findTriggerBehavior(region);
-      if (!behavior || behavior.disabled) continue;
-      if (!region.tokens?.has(tokenDoc)) continue;
-      visited.add(region.id);
-      queue.push({ region, behavior, tokenDoc });
-    }
-  }
-
-  for (const item of queue) {
-    await runCombatTrigger({
-      behavior: item.behavior,
-      region: item.region,
-      triggeringToken: item.tokenDoc
-    });
-  }
 }
 
 export function findTriggerBehavior(regionDoc) {

@@ -4,5 +4,5 @@ export const BEHAVIOR_TYPE = `${MODULE_ID}.combatTrigger`;
 export const SETTINGS = {
   radius: "defaultRadius",
   initiativeAdvance: "initiativeAdvance",
-  cascade: "cascade"
+  deleteAfterTrigger: "deleteAfterTrigger"
 };

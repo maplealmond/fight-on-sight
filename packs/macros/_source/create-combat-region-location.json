@@ -1,11 +1,11 @@
 {
-  "_id": "fghtCmbtRgnMcr01",
-  "name": "Create Combat Region",
+  "_id": "fghtCmbtRgnLoc01",
+  "name": "Create Combat Region (Location)",
   "type": "script",
   "author": "fight-on-sight",
   "img": "icons/svg/combat.svg",
   "scope": "global",
-  "command": "game.modules.get('fight-on-sight').api.createCombatRegion();",
+  "command": "game.modules.get('fight-on-sight').api.createCombatRegionLocation();",
   "folder": null,
   "sort": 0,
   "ownership": { "default": 0 },
@@ -18,5 +18,5 @@
     "modifiedTime": null,
     "lastModifiedBy": null
   },
-  "_key": "!macros!fghtCmbtRgnMcr01"
+  "_key": "!macros!fghtCmbtRgnLoc01"
 }

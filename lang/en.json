@@ -1,12 +1,6 @@
 {
   "FIGHT_ON_SIGHT.moduleTitle": "Fight on Sight",
-  "FIGHT_ON_SIGHT.behavior.label": "Combat Trigger (Fight on Sight)",
-  "FIGHT_ON_SIGHT.macro.name": "Create Combat Region",
-  "FIGHT_ON_SIGHT.dialog.anchor.title": "Create Combat Region",
-  "FIGHT_ON_SIGHT.dialog.anchor.content": "How should the region be anchored?",
-  "FIGHT_ON_SIGHT.dialog.anchor.location": "Anchor to a location",
-  "FIGHT_ON_SIGHT.dialog.anchor.token": "Anchor to a token",
-  "FIGHT_ON_SIGHT.dialog.anchor.cancel": "Cancel",
+  "FIGHT_ON_SIGHT.behavior.label": "Combat Zone",
   "FIGHT_ON_SIGHT.prompt.clickLocation": "Click on the map to place the combat region.",
   "FIGHT_ON_SIGHT.prompt.clickToken": "Click a token on the canvas to anchor the combat region.",
   "FIGHT_ON_SIGHT.notify.created": "Combat region created ({radius} ft).",
@@ -14,10 +8,11 @@
   "FIGHT_ON_SIGHT.notify.noScene": "No active scene.",
   "FIGHT_ON_SIGHT.notify.notGm": "Only the GM can create combat regions.",
   "FIGHT_ON_SIGHT.notify.notTokenTargeted": "That click did not land on a token.",
+  "FIGHT_ON_SIGHT.notify.reenabled": "Re-enabled {count} combat trigger region(s).",
   "FIGHT_ON_SIGHT.settings.radius.name": "Default Region Radius (feet)",
   "FIGHT_ON_SIGHT.settings.radius.hint": "Default radius of a newly created combat region, in feet.",
   "FIGHT_ON_SIGHT.settings.initiativeAdvance.name": "Auto-advance to Round 1",
   "FIGHT_ON_SIGHT.settings.initiativeAdvance.hint": "When every combatant has rolled initiative, advance combat to round one and unpause the game.",
-  "FIGHT_ON_SIGHT.settings.cascade.name": "Cascade to Linked Regions",
-  "FIGHT_ON_SIGHT.settings.cascade.hint": "When an NPC is added to combat, also trigger any enabled combat region containing them."
+  "FIGHT_ON_SIGHT.settings.deleteAfterTrigger.name": "Delete Region After Trigger",
+  "FIGHT_ON_SIGHT.settings.deleteAfterTrigger.hint": "When a combat region triggers, delete the region entirely instead of just disabling it."
 }

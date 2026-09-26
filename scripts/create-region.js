@@ -1,37 +1,52 @@
-// GM flow for creating a combat trigger region. Exposed via
-// `game.modules.get("fight-on-sight").api.createCombatRegion()` and invoked
-// by the "Create Combat Region" macro shipped in the module's compendium.
+// GM flows for creating combat trigger regions. Two entry points on the API:
+//
+//   createCombatRegionLocation()  → shipped as the "Create Combat Region
+//                                    (Location)" macro. Uses Foundry's native
+//                                    region placement flow.
+//   createCombatRegionToken()     → shipped as the "Create Combat Region
+//                                    (Token)" macro. Deselects any current
+//                                    token, activates the Select Tokens
+//                                    control, and attaches the region to the
+//                                    next token the GM clicks.
 
 import { BEHAVIOR_TYPE, MODULE_ID, SETTINGS } from "./constants.js";
 
-export async function createCombatRegion() {
+export async function createCombatRegionLocation() {
+  const scene = requireGMAndScene();
+  if (!scene) return;
+  const radiusFeet = defaultRadiusFeet();
+  await placeLocationRegion({ scene, radiusFeet });
+}
+
+export async function createCombatRegionToken() {
+  const scene = requireGMAndScene();
+  if (!scene) return;
+  const radiusFeet = defaultRadiusFeet();
+  const tokenDoc = await selectTokenViaClick();
+  if (!tokenDoc) return notifyCancelled();
+  await placeTokenRegion({ tokenDoc, radiusFeet });
+}
+
+function requireGMAndScene() {
   if (!game.user.isGM) {
     ui.notifications?.warn?.(game.i18n.localize("FIGHT_ON_SIGHT.notify.notGm"));
-    return;
+    return null;
   }
   const scene = canvas?.scene;
   if (!scene) {
     ui.notifications?.warn?.(game.i18n.localize("FIGHT_ON_SIGHT.notify.noScene"));
-    return;
+    return null;
   }
+  return scene;
+}
 
-  const choice = await promptAnchorChoice();
-  if (!choice) return;
-
-  const radiusFeet = game.settings.get(MODULE_ID, SETTINGS.radius) || 30;
-
-  if (choice === "location") {
-    await placeLocationRegion({ scene, radiusFeet });
-  } else {
-    const tokenDoc = await promptTokenClick(game.i18n.localize("FIGHT_ON_SIGHT.prompt.clickToken"));
-    if (!tokenDoc) return notifyCancelled();
-    await placeTokenRegion({ tokenDoc, radiusFeet });
-  }
+function defaultRadiusFeet() {
+  return game.settings.get(MODULE_ID, SETTINGS.radius) || 30;
 }
 
 function commonRegionData() {
   return {
-    name: `Combat Trigger`,
+    name: game.i18n.localize("FIGHT_ON_SIGHT.behavior.label"),
     color: "#c62828",
     visibility: CONST.REGION_VISIBILITY?.GAMEMASTER ?? 2,
     behaviors: [
@@ -50,7 +65,6 @@ async function placeLocationRegion({ scene, radiusFeet }) {
   ui.notifications?.info?.(game.i18n.localize("FIGHT_ON_SIGHT.prompt.clickLocation"));
   const region = await canvas.regions.placeRegion({
     ...commonRegionData(),
-    name: `Combat Trigger (${radiusFeet} ft)`,
     shapes: [{ type: "circle", x: 0, y: 0, radius: radiusPx, gridBased: true }],
     levels: [canvas.level.id],
     restriction: { enabled: true, type: "move", priority: 0 }
@@ -69,7 +83,6 @@ async function placeTokenRegion({ tokenDoc, radiusFeet }) {
     radiusFeet,
     {
       ...commonRegionData(),
-      name: `Combat Trigger (${radiusFeet} ft, attached)`,
       restriction: { enabled: true, type: "sight", priority: 0 }
     },
     { excludeToken: false }
@@ -82,42 +95,15 @@ function notifyCancelled() {
   ui.notifications?.info?.(game.i18n.localize("FIGHT_ON_SIGHT.notify.cancelled"));
 }
 
-async function promptAnchorChoice() {
-  const D = foundry.applications?.api?.DialogV2 ?? Dialog;
-  if (D === Dialog) {
-    return new Promise(resolve => {
-      new Dialog({
-        title: game.i18n.localize("FIGHT_ON_SIGHT.dialog.anchor.title"),
-        content: `<p>${game.i18n.localize("FIGHT_ON_SIGHT.dialog.anchor.content")}</p>`,
-        buttons: {
-          location: { label: game.i18n.localize("FIGHT_ON_SIGHT.dialog.anchor.location"), callback: () => resolve("location") },
-          token: { label: game.i18n.localize("FIGHT_ON_SIGHT.dialog.anchor.token"), callback: () => resolve("token") },
-          cancel: { label: game.i18n.localize("FIGHT_ON_SIGHT.dialog.anchor.cancel"), callback: () => resolve(null) }
-        },
-        default: "location",
-        close: () => resolve(null)
-      }).render(true);
-    });
-  }
+// Deselect whatever is currently selected, activate the Token layer's default
+// Select Tokens tool, and wait for the next token the GM clicks. Guarantees
+// exactly one click — never zero (from an existing selection) and never
+// two (from having to activate the tool first).
+function selectTokenViaClick() {
+  canvas.tokens?.releaseAll?.();
+  canvas.tokens?.activate?.();
+  ui.notifications?.info?.(game.i18n.localize("FIGHT_ON_SIGHT.prompt.clickToken"));
 
-  return D.wait({
-    window: { title: game.i18n.localize("FIGHT_ON_SIGHT.dialog.anchor.title") },
-    content: `<p>${game.i18n.localize("FIGHT_ON_SIGHT.dialog.anchor.content")}</p>`,
-    buttons: [
-      { action: "location", label: game.i18n.localize("FIGHT_ON_SIGHT.dialog.anchor.location"), default: true },
-      { action: "token", label: game.i18n.localize("FIGHT_ON_SIGHT.dialog.anchor.token") },
-      { action: "cancel", label: game.i18n.localize("FIGHT_ON_SIGHT.dialog.anchor.cancel") }
-    ],
-    rejectClose: false
-  }).then(action => (action && action !== "cancel" ? action : null));
-}
-
-// Prompt the GM to click a token. If they already have one controlled, use it.
-function promptTokenClick(message) {
-  const already = canvas.tokens?.controlled?.[0]?.document;
-  if (already) return Promise.resolve(already);
-
-  ui.notifications?.info?.(message);
   return new Promise(resolve => {
     const onControl = (token, controlled) => {
       if (!controlled) return;
