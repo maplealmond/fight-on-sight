@@ -1,0 +1,47 @@
+{
+  "id": "fight-on-sight",
+  "title": "Fight on Sight",
+  "description": "Lets a GM place combat trigger regions that start a fight when the players walk into them.",
+  "version": "#{VERSION}#",
+  "compatibility": {
+    "minimum": "13",
+    "verified": "13"
+  },
+  "authors": [
+    {
+      "name": "michael"
+    }
+  ],
+  "url": "#{URL}#",
+  "manifest": "#{MANIFEST}#",
+  "download": "#{DOWNLOAD}#",
+  "esmodules": [
+    "scripts/fight-on-sight.js"
+  ],
+  "documentTypes": {
+    "RegionBehavior": {
+      "combatTrigger": {}
+    }
+  },
+  "packs": [
+    {
+      "name": "macros",
+      "label": "Fight on Sight Macros",
+      "path": "packs/macros",
+      "type": "Macro",
+      "system": "",
+      "ownership": {
+        "PLAYER": "NONE",
+        "ASSISTANT": "OBSERVER",
+        "GAMEMASTER": "OWNER"
+      }
+    }
+  ],
+  "languages": [
+    {
+      "lang": "en",
+      "name": "English",
+      "path": "lang/en.json"
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+Fight on Sight
+
+---
+
+We are going to make a Foundry VTT module that allows a GM to create combat triggers.  The module will be called Fight On Sight
+
+A combat region is defined as a scene region which starts a fight when players enter it.
+
+A GM is provided with a macro called Create Combat Region.  The GM is then provide with the choice to anchor to a location, or to anchor to a token.  If anchored to a location, the GM will be prompted to click the map.  If anchored to a token, the GM will be prompted to click a token.
+
+The region created will be a circle, not a template, by default 30 feet in radius, and restricted by movement-blocking walls.  If attached to a token, it is restricted by sight blocking walls and darkness with priority threshold that could not be defeated by the target's dark vision.
+
+The region should be on one level only.
+
+The region should have a behavior which executes a macro, the definition of that macro will follow.  It should trigger on a token entering, moving in, or moving within the region.  It should also trigger if the region border changes (possibly because a door opened)
+
+The macro triggered does the following
+
+- The region needs to contain a PC.  If there is none, stop.
+- If the triggering token is a PC, disable the region so it does not trigger again, and continue with the rest of the macro.
+- Create a combat, unless one is already running
+- Add every NPC in the region to the combat (unless they are already in the combat)
+- Add every PC to the combat no matter where they are (unless they are already in the combat)
+
+
+Bonus: Add a listener when a combat starts on initiative rolls so that when everyone in combat has rolled initiative, combat transitions to round one, and the game unpauses.  This should be a feature.
+
+Bonus: If an NPC is added to a combat, and it is in a different combat trigger region, that combat region should ALSO be triggered, unless it has been disabled, so as to create a cascading effect.
+

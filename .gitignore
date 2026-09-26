@@ -1,0 +1,12 @@
+# Built compendium packs — regenerated from packs/*/_source by the release workflow.
+packs/*/*.log
+packs/*/*.ldb
+packs/*/CURRENT
+packs/*/LOCK
+packs/*/LOG
+packs/*/LOG.old
+packs/*/MANIFEST-*
+
+# Local editor state
+.claude/
+.DS_Store
