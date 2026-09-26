@@ -64,7 +64,7 @@ export function runCombatTrigger(args) {
   return next;
 }
 
-async function _runCombatTrigger({ behavior, region, triggeringToken }) {
+async function _runCombatTrigger({ behavior, region, triggeringToken, requirePC = true, retire = null }) {
   if (!game.user.isActiveGM) return;
   if (!region || behavior?.disabled) return;
 
@@ -77,15 +77,22 @@ async function _runCombatTrigger({ behavior, region, triggeringToken }) {
     region: region.name,
     triggeringToken: triggeringToken?.name,
     insideCount: inside.length,
-    triggeringPCs: triggeringPCs.map(t => t.name)
+    triggeringPCs: triggeringPCs.map(t => t.name),
+    requirePC
   });
-  if (!triggeringPCs.length) return;
+  // Movement triggers need a detected PC standing in the region — otherwise
+  // an NPC pacing back and forth would keep firing regions with no players
+  // around. Combatant-hook triggers skip this check: the triggering token
+  // (which just entered combat) IS the reason to fire.
+  if (requirePC && !triggeringPCs.length) return;
 
-  // If a detected PC triggered us, retire this trigger so it doesn't fire
-  // again. The world setting decides whether to disable the behavior (keep
-  // the region on the map for later re-enable) or delete the whole region
-  // outright. Undetected PCs never trip it — they walk through invisibly.
-  if (triggeringToken && isTriggeringPC(triggeringToken)) {
+  // Retire this trigger so it doesn't fire again. The caller can force the
+  // decision via `retire`; otherwise the default is "was the token that just
+  // tripped us a detected PC?" — matches the original spec for movement
+  // triggers, while the combatant-hook path explicitly passes `retire: true`
+  // so an NPC entering combat inside the region also retires it.
+  const shouldRetire = retire ?? (triggeringToken ? isTriggeringPC(triggeringToken) : false);
+  if (shouldRetire) {
     if (game.settings.get(MODULE_ID, SETTINGS.deleteAfterTrigger)) {
       await region.delete();
     } else {

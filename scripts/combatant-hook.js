@@ -18,7 +18,16 @@ export function registerCombatantHook() {
       const behavior = findTriggerBehavior(region);
       if (!behavior || behavior.disabled) continue;
       if (!region.tokens?.has(tokenDoc)) continue;
-      runCombatTrigger({ behavior, region, triggeringToken: tokenDoc });
+      // Manual/hook-driven entry: skip the "must have a PC in the region"
+      // gate, and force retirement — a region that fires this way is spent,
+      // same as one tripped by a PC walking in.
+      runCombatTrigger({
+        behavior,
+        region,
+        triggeringToken: tokenDoc,
+        requirePC: false,
+        retire: true
+      });
     }
   });
 }
