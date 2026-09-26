@@ -60,6 +60,14 @@ function registerSettings() {
     type: Boolean,
     default: false
   });
+  game.settings.register(MODULE_ID, SETTINGS.avoidNoticeEnabled, {
+    name: "FIGHT_ON_SIGHT.settings.avoidNoticeEnabled.name",
+    hint: "FIGHT_ON_SIGHT.settings.avoidNoticeEnabled.hint",
+    scope: "world",
+    config: true,
+    type: Boolean,
+    default: true
+  });
   game.settings.register(MODULE_ID, SETTINGS.avoidNoticeTtl, {
     name: "FIGHT_ON_SIGHT.settings.avoidNoticeTtl.name",
     hint: "FIGHT_ON_SIGHT.settings.avoidNoticeTtl.hint",

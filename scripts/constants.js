@@ -5,5 +5,6 @@ export const SETTINGS = {
   radius: "defaultRadius",
   initiativeAdvance: "initiativeAdvance",
   deleteAfterTrigger: "deleteAfterTrigger",
+  avoidNoticeEnabled: "avoidNoticeEnabled",
   avoidNoticeTtl: "avoidNoticeTtl"
 };

@@ -25,6 +25,12 @@ function getTtlSeconds() {
   return Number.isFinite(configured) && configured > 0 ? configured : 6;
 }
 
+// Master toggle: when off, all Avoid Notice behavior (region prompt, stored
+// roll ride, pre-roll macro) is inert.
+export function avoidNoticeEnabled() {
+  return game.settings?.get?.(MODULE_ID, SETTINGS.avoidNoticeEnabled) !== false;
+}
+
 export function hasAvoidNotice(actor) {
   const exploration = actor?.system?.exploration;
   if (!Array.isArray(exploration)) return false;
@@ -132,6 +138,10 @@ async function waitForDsn(messageId) {
 // Player-facing: pre-roll (or re-roll) Avoid Notice for the controlled
 // PC. Overwrites any previously stored result.
 export async function rollAvoidNoticePreset() {
+  if (!avoidNoticeEnabled()) {
+    ui.notifications?.warn?.(game.i18n.localize("FIGHT_ON_SIGHT.avoidNotice.disabled"));
+    return;
+  }
   const token = canvas.tokens?.controlled?.[0]?.document
     ?? game.user?.character?.getActiveTokens?.(true, true)?.[0]?.document
     ?? null;

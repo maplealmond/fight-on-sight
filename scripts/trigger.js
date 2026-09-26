@@ -4,7 +4,7 @@
 // recursion here.
 
 import { BEHAVIOR_TYPE, MODULE_ID, SETTINGS } from "./constants.js";
-import { getStoredResult, hasAvoidNotice } from "./avoid-notice.js";
+import { avoidNoticeEnabled, getStoredResult, hasAvoidNotice } from "./avoid-notice.js";
 import { presentAvoidNoticeChoice } from "./prompt.js";
 
 // A "PC" for our purposes = a token whose actor is a member of the primary
@@ -99,6 +99,7 @@ async function _runCombatTrigger({ behavior, region, triggeringToken, requirePC 
   //     re-enters this function with skipAvoidNotice=true.
   if (
     !skipAvoidNotice
+    && avoidNoticeEnabled()
     && requirePC
     && triggeringToken
     && isTriggeringPC(triggeringToken)
