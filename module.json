@@ -7,6 +7,15 @@
     "minimum": "13",
     "verified": "13"
   },
+  "relationships": {
+    "systems": [
+      {
+        "id": "pf2e",
+        "type": "system",
+        "compatibility": {}
+      }
+    ]
+  },
   "authors": [
     {
       "name": "michael"
@@ -29,7 +38,7 @@
       "label": "Fight on Sight Macros",
       "path": "packs/macros",
       "type": "Macro",
-      "system": "",
+      "system": "pf2e",
       "ownership": {
         "PLAYER": "NONE",
         "ASSISTANT": "OBSERVER",
