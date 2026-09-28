@@ -116,6 +116,10 @@ async function onPromptClick(event) {
     const region = scene?.regions?.get?.(regionId);
     const npcs = region ? Array.from(region.tokens ?? []).filter(t => t.actor && !t.actor.hasPlayerOwner) : [];
     const outcome = await attemptAvoidNotice(token, npcs);
+    // Player closed the roll dialog without committing (e.g. adjusting bonuses
+    // before another attempt). Leave the prompt untouched so they can click
+    // again.
+    if (outcome.total == null) return;
     success = outcome.success === true;
   }
 

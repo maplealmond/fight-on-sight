@@ -67,50 +67,20 @@ export async function clearStoredResult(actor) {
   await actor.unsetFlag(MODULE_ID, STORAGE_KEY);
 }
 
-// Prefer PF2E's built-in Avoid Notice action so the chat card is rendered
-// with the system's usual header, exploration tag, and success/failure
-// notes. Falls back to a raw Stealth check if the action registry isn't
-// available. Awaits Dice So Nice's 3D dice animation so callers can chain
-// follow-up work without racing the roll on-screen.
+// Fires PF2E's built-in Avoid Notice action so the chat card is rendered
+// with the system's usual header, exploration tag, and success/failure notes.
+// Awaits Dice So Nice's 3D dice animation so callers can chain follow-up
+// work without racing the roll on-screen. Returns null if the player closes
+// the roll dialog without committing.
 async function rollAvoidNoticeAction(actor, { dc } = {}) {
   const difficultyClass = Number.isFinite(dc) ? { value: dc, visible: true } : undefined;
-
-  const action = game.pf2e?.actions?.get?.("avoid-notice");
-  if (action?.use) {
-    try {
-      const results = await action.use({
-        actors: [actor],
-        difficultyClass,
-        rollOptions: [`${MODULE_ID}:region-entry`],
-        skipDialog: true
-      });
-      const total = extractRollTotal(results);
-      const messageId = extractMessageId(results);
-      await waitForDsn(messageId);
-      if (total != null) return total;
-    } catch (err) {
-      console.warn(`${MODULE_ID} | pf2e avoid-notice action failed, falling back`, err);
-    }
-  }
-
-  // Fallback: raw Stealth check with a manual "Avoid Notice" label.
-  const stealth = actor?.skills?.stealth;
-  if (typeof stealth?.roll !== "function") return null;
-  try {
-    const rollOptions = {
-      extraRollOptions: ["action:avoid-notice", `${MODULE_ID}:region-entry`],
-      skipDialog: true,
-      createMessage: true,
-      label: "Avoid Notice"
-    };
-    if (difficultyClass) rollOptions.dc = difficultyClass;
-    const message = await stealth.roll(rollOptions);
-    await waitForDsn(message?.id);
-    return message?.rolls?.[0]?.total ?? message?.total ?? null;
-  } catch (err) {
-    console.warn(`${MODULE_ID} | Avoid Notice roll failed`, err);
-    return null;
-  }
+  const results = await game.pf2e.actions.get("avoid-notice").use({
+    actors: [actor],
+    difficultyClass,
+    rollOptions: [`${MODULE_ID}:region-entry`]
+  });
+  await waitForDsn(extractMessageId(results));
+  return extractRollTotal(results);
 }
 
 function extractRollTotal(results) {
