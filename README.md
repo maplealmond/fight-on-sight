@@ -2,7 +2,7 @@
 
 You round the corner and see a monster.  Freeze!  Roll initiative.
 
-This module is mainly intended for heavy dungeon crawls.  It allows you to create combat trigger regions onto a scene or attach them to a monster.  When a PC gets too close to the monster, the game pauses, everyone gets added to the fight.
+This module is mainly intended for heavy dungeon crawls in Pathfinder 2nd Edition.  It allows you to create combat trigger regions onto a scene or attach them to a monster.  When a PC gets too close to the monster, the game pauses, everyone gets added to the fight.
 
 Combat regions also trigger to NPCs entering combat, so any NPC who sees their friends react and join a fight will also join the fight, if so configured.
 
@@ -15,6 +15,8 @@ By default, the region self-disables the first time a PC crosses it, so it fires
 ## Bonus features
 
 If a PC has the PF2e Undetected status, they will not trigger a combat region.
+
+If a PC has the PF2e Avoid Notice exploration activity active, they will get an option to roll Stealth.  On a success, the battle will not start.  This effect only lasts for a while (six in game seconds) by default, and should give players just enough time to slip away.  You can always go straight to Encounter Mode and roll initiave.
 
 Optional: When every combatant has rolled initiative, combat advances to round one and the game unpauses.
 
