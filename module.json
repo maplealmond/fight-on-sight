@@ -4,8 +4,8 @@
   "description": "Lets a GM place combat trigger regions that start a fight when the players walk into them.",
   "version": "#{VERSION}#",
   "compatibility": {
-    "minimum": "13",
-    "verified": "13"
+    "minimum": "14",
+    "verified": "14"
   },
   "relationships": {
     "systems": [
