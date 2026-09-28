@@ -23,7 +23,8 @@
   },
   "authors": [
     {
-      "name": "michael"
+      "name": "michael",
+      "email": "maplealmond@gmail.com"
     }
   ],
   "url": "#{URL}#",
